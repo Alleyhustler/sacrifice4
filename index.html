@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SACRIFICE-TO-MINT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ruslan+Display&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #1a1a1a;
+            --secondary: #0a0a0a;
+            --accent: #4c4e8c;
+            --text: #e0e0e0;
+            --text-dim: #888;
+            --success: #33ff66;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background-color: var(--primary);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 600px;
+            border: 1px solid #333;
+            border-radius: 0;
+            padding: 2rem;
+            background: var(--secondary);
+            position: relative;
+            box-shadow: 0 0 30px rgba(95, 51, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+              font-family: "Ruslan Display", sans-serif;
+
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .status-bar {
+            height: 4px;
+            background: #333;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .status-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+        
+        .section {
+            margin-bottom: 2rem;
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .wallet-address {
+            background: #111;
+            padding: 1rem;
+            margin: 1rem 0;
+            word-break: break-all;
+            font-size: 0.9rem;
+            border: 1px solid #333;
+            position: relative;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            right: 0.5rem;
+            top: 0.5rem;
+            background: #333;
+            color: var(--text);
+            border: none;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .copy-btn:hover {
+            background: var(--accent);
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 1rem 0;
+            transition: all 0.2s;
+        }
+        
+        .btn:disabled {
+            background: #333;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .btn:hover:not(:disabled) {
+            background: #ff1a53;
+        }
+        
+        .upload-area {
+            border: 2px dashed #333;
+            padding: 2rem;
+            text-align: center;
+            margin: 1rem 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--accent);
+        }
+        
+        .upload-area p {
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+        }
+        
+        .verification {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .verification-message {
+            margin-bottom: 1rem;
+            min-height: 1.5rem;
+        }
+        
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            margin: 1rem auto;
+            animation: spin 1s ease-in-out infinite;
+            display: none;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .success-message {
+            color: var(--success);
+            text-align: center;
+            margin: 1rem 0;
+            display: none;
+        }
+        
+        .how-it-works {
+            margin-top: 3rem;
+            border-top: 1px solid #333;
+            padding-top: 2rem;
+        }
+        
+        .how-it-works h2 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 1.2rem;
+        }
+        
+        .how-it-works ol {
+            padding-left: 1.5rem;
+        }
+        
+        .how-it-works li {
+            margin-bottom: 0.5rem;
+            color: var(--text-dim);
+        }
+        
+        .terminal-line {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+        
+        .terminal-prompt {
+            color: var(--accent);
+            margin-right: 0.5rem;
+        }
+        
+        .flashing-cursor {
+            animation: blink 1s step-end infinite;
+        }
+        
+        @keyframes blink {
+            from, to { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .gif-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('clouds.gif'); /* Replace with your GIF URL */
+    background-size: cover;
+    background-position: center;
+    z-index: -1;
+    opacity: 0.55; /* Adjust for readability */
+}
+.logo-container {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.logo {
+    max-width: 200px;
+    height: auto;
+    margin: 0 auto;
+}
+    </style>
+</head>
+<body>
+    <div class="gif-background"></div>
+
+    <div class="container">
+        <div class="logo-container">
+    <img src="Untitled Project (1).png" alt="SACRIFICE-TO-MINT" class="logo">
+</div>
+        <h1>SACRIFICE-TO-MINT</h1>
+        <div class="status-bar">
+            <div class="status-progress" id="statusProgress"></div>
+        </div>
+        
+        <!-- Section 1: Introduction -->
+        <div class="section active" id="section1">
+            <div class="terminal-line">
+                <span class="terminal-prompt">></span>
+                <span id="typingText"></span>
+                <span class="flashing-cursor">_</span>
+            </div>
+            <p style="margin-top: 1rem;">To receive 1,000,000 $SACRIFICE tokens, you must first make a sacrifice.</p>
+            <button class="btn" id="startBtn">BEGIN SACRIFICE</button>
+        </div>
+        
+        <!-- Section 2: Sacrifice Options -->
+        <div class="section" id="section2">
+            <p>Choose your method of sacrifice:</p>
+            
+            <div class="wallet-address">
+                <span id="sacrificeAddress">A7rJsRXiEgtfiDDVBzmnbFv4WQDTQnsk4cXEWhJv9pxe</span>
+                <button class="copy-btn" id="copyAddressBtn">COPY</button>
+            </div>
+            <p style="text-align: center; color: var(--text-dim); margin-bottom: 1rem;">Send tokens to this address</p>
+            
+            <p style="text-align: center; margin: 1.5rem 0; color: var(--text-dim);">- OR -</p>
+            
+            <div class="upload-area" id="uploadArea">
+                <strong>UPLOAD PROOF OF SACRIFICE</strong>
+                <p>NFTs, token exports, or any file</p>
+                <input type="file" id="fileInput" style="display: none;">
+            </div>
+            
+            <button class="btn" id="submitSacrificeBtn" disabled>SUBMIT SACRIFICE</button>
+        </div>
+        
+        <!-- Section 3: Verification -->
+        <div class="section" id="section3">
+            <div class="verification">
+                <div class="verification-message" id="verificationMessage">Initializing verification sequence...</div>
+                <div class="spinner" id="verificationSpinner"></div>
+                <div class="success-message" id="successMessage">
+                    SACRIFICE VERIFIED. PROCEED TO MINT.
+                </div>
+            </div>
+            <button class="btn" id="claimBtn" disabled>CLAIM 1,000,000 $SACRIFICE</button>
+        </div>
+        
+        <!-- Section 4: Completion -->
+        <div class="section" id="section4">
+            <div class="verification">
+                <div class="success-message" style="display: block; font-size: 1.2rem;">
+                    SACRIFICE COMPLETE
+                </div>
+                <p style="text-align: center; margin: 1rem 0;">You have claimed:</p>
+                <h2 style="text-align: center; color: var(--accent); margin-bottom: 1.5rem;">1,000,000 $SACRIFICE</h2>
+                <p style="text-align: center; color: var(--text-dim);">Transaction ID: 7x{{randomHex(64)}}</p>
+            </div>
+            <button class="btn" id="restartBtn">MAKE ANOTHER SACRIFICE</button>
+        </div>
+        
+        <!-- How It Works -->
+        <div class="how-it-works">
+            <h2>HOW IT WORKS @sacrifice4mint</h2>
+            <ol>
+                <li>Sacrifice something of value by sending it to our wallet or uploading proof</li>
+                <li>Our system verifies your sacrifice (this may take up to 2 minutes)</li>
+                <li>Once verified, you can claim your 1,000,000 $SACRIFICE tokens</li>
+                <li>The more you sacrifice, the greater your rewards in future distributions</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const sections = document.querySelectorAll('.section');
+        const startBtn = document.getElementById('startBtn');
+        const submitSacrificeBtn = document.getElementById('submitSacrificeBtn');
+        const claimBtn = document.getElementById('claimBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const copyAddressBtn = document.getElementById('copyAddressBtn');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const verificationMessage = document.getElementById('verificationMessage');
+        const verificationSpinner = document.getElementById('verificationSpinner');
+        const successMessage = document.getElementById('successMessage');
+        const statusProgress = document.getElementById('statusProgress');
+        const typingText = document.getElementById('typingText');
+        
+        // Typing effect for terminal text
+        const terminalText = "Welcome to SACRIFICE-TO-MINT protocol.";
+        let i = 0;
+        
+        function typeWriter() {
+            if (i < terminalText.length) {
+                typingText.textContent += terminalText.charAt(i);
+                i++;
+                setTimeout(typeWriter, Math.random() * 50 + 30);
+            }
+        }
+        
+        // Initialize
+        typeWriter();
+        
+        // Generate random hex string
+        function randomHex(length) {
+            const chars = '0123456789abcdef';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        // Change section
+        function showSection(sectionNumber) {
+            sections.forEach((section, index) => {
+                if (index === sectionNumber - 1) {
+                    section.classList.add('active');
+                    statusProgress.style.width = `${(sectionNumber - 1) * 33.33}%`;
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+        }
+        
+        // Copy address to clipboard
+        copyAddressBtn.addEventListener('click', () => {
+            const address = document.getElementById('sacrificeAddress').textContent;
+            navigator.clipboard.writeText(address).then(() => {
+                copyAddressBtn.textContent = 'COPIED!';
+                setTimeout(() => {
+                    copyAddressBtn.textContent = 'COPY';
+                }, 2000);
+            });
+        });
+        
+        // File upload handling
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                submitSacrificeBtn.disabled = false;
+                uploadArea.innerHTML = `
+                    <strong>${fileInput.files[0].name}</strong>
+                    <p>${(fileInput.files[0].size / 1024).toFixed(2)} KB</p>
+                `;
+                uploadArea.style.borderColor = 'var(--accent)';
+            }
+        });
+        
+        // Start button
+        startBtn.addEventListener('click', () => {
+            showSection(2);
+        });
+        
+        // Submit sacrifice button
+        submitSacrificeBtn.addEventListener('click', () => {
+            showSection(3);
+            verificationSpinner.style.display = 'block';
+            
+            // Fake verification messages
+            const messages = [
+                "Analyzing sacrifice...",
+                "Validating submission...",
+                "Cross-referencing blockchain...",
+                "Calculating sacrifice value...",
+                "Finalizing verification..."
+            ];
+            
+            let currentMessage = 0;
+            const messageInterval = setInterval(() => {
+                verificationMessage.textContent = messages[currentMessage];
+                currentMessage++;
+                
+                if (currentMessage >= messages.length) {
+                    clearInterval(messageInterval);
+                    verificationComplete();
+                }
+            }, 2000);
+        });
+        
+        // Verification complete
+        function verificationComplete() {
+            verificationSpinner.style.display = 'none';
+            verificationMessage.textContent = "Verification complete";
+            successMessage.style.display = 'block';
+            claimBtn.disabled = false;
+            
+            // Create confetti effect
+            createConfetti();
+        }
+        
+        // Claim button
+        claimBtn.addEventListener('click', () => {
+            showSection(4);
+            statusProgress.style.width = '100%';
+            createConfetti();
+        });
+        
+        // Restart button
+        restartBtn.addEventListener('click', () => {
+            // Reset form
+            submitSacrificeBtn.disabled = true;
+            uploadArea.innerHTML = `
+                <strong>UPLOAD PROOF OF SACRIFICE</strong>
+                <p>NFTs, token exports, or any file</p>
+            `;
+            uploadArea.style.borderColor = '#333';
+            fileInput.value = '';
+            verificationSpinner.style.display = 'none';
+            successMessage.style.display = 'none';
+            verificationMessage.textContent = "Initializing verification sequence...";
+            claimBtn.disabled = true;
+            
+            showSection(1);
+        });
+        
+        // Confetti effect
+        function createConfetti() {
+            const colors = ['#ff3366', '#33ff66', '#3366ff', '#ffcc33'];
+            const container = document.querySelector('.container');
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.top = '-10px';
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                container.appendChild(confetti);
+                
+                // Animate
+                const animation = confetti.animate([
+                    { top: '-10px', opacity: 1, transform: `rotate(${Math.random() * 360}deg)` },
+                    { top: `${Math.random() * 100 + 100}%`, opacity: 0 }
+                ], {
+                    duration: 1000 + Math.random() * 2000,
+                    easing: 'cubic-bezier(0.1, 0.8, 0.9, 1)'
+                });
+                
+                animation.onfinish = () => confetti.remove();
+            }
+        }
+    </script>
+</body>
+</html>
